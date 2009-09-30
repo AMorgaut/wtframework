@@ -90,19 +90,20 @@
 	if (w.MooTools) {
 		if (a.MooTools) delete a.MooTools;
 		m = MooTools;
-		if (m.version > '1.11') {
-			f.push( 'MooTools-Core ('+m.version+')');
+		v = m.version
+		if (v > '1.11') {
+			f.push( 'MooTools-Core ('+v+')');
 			f.push( 
 				'MooTools-More' +
 				(m.More) ?
-					' ('+m.version+')'
+					' ('+v+')'
 				: (w.Tips || w.Drag) ?
 					' (< 1.2.2.1)'
 				: 
 					''
 			)
 		} else {
-			f.push( 'MooTools ('+m.version+')')
+			f.push( 'MooTools ('+v+')')
 		}
 	}
 	
