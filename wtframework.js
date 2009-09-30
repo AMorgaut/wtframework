@@ -1,83 +1,128 @@
 (function(){
+	// refactored
+	// added SPRY, Flash, qooxdoo, Open Ajax, Wakanda, jmaki, ample sdk, APF
+	// this source is optimised to help minification for bookmarklet
 
-	var id = '__wtframework_bar__';
-	var bar = document.getElementById(id);
-	var remove = function(){ document.body.removeChild(bar); };
-	if (bar){ remove(); return; }
+	var
+	n = '__wtframework_am__', // popup id (name)
+	d = document, // document
+	b = d.body, // document body
+	w = window, // global object
+	e = d.getElementById(n), // popup
+	l, // framework list
+	f = [], // found frameworks
+	o, // Open Ajax
+	a = [],  // Open Ajax subscribed frameworks
+	m, // Mootools
+	r = function() {
+		b.removeChild(e)
+	},
+	s, // styles
+	i; // index
 
-	var frameworks = {
-		'Base2': function(){
-			if (window.base2) return base2.version;
-		},
-
-		'Dojo': function(){
-			if (window.dojo) return dojo.version;
-		},
-
-		'Ext JS': function(){
-			if (window.Ext) return Ext.version;
-		},
-
-		'jQuery': function(){
-			if (window.jQuery) return jQuery.fn.jquery;
-		},
-		
-		'jQuery UI': function() {
-			if (window.jQuery && $.ui) return $.ui.version;
-		},
-
-		'MochiKit': function(){
-			if (window.MochiKit) return MochiKit.MochiKit.VERSION;
-		},
-		
-		'MooTools': function(){
-			if (window.MooTools && MooTools.version <= "1.11") return MooTools.version;
-		},
-
-		'MooTools-Core': function(){
-			if (window.MooTools && MooTools.version > "1.11") return MooTools.version;
-		},
-
-		'MooTools-More': function(){
-			if (!window.MooTools || (window.MooTools && MooTools.version <= '1.11')) return;
-			
-			if (window.MooTools.More) return MooTools.More.version;
-			else if (window.Tips || window.Drag) return '< 1.2.2.1';
-		},
-
-		'Prototype': function(){
-			if (window.Prototype) return Prototype.Version;
-		},
-
-		'Script.aculo.us': function(){
-			if (window.Scriptaculous) return Scriptaculous.Version;
-		},
-
-		'Yahoo UI': function(){
-			if (window.YAHOO) return YAHOO.VERSION;
-		}
-	};
-
-	var found = [];
-	for (framework in frameworks){
-		var version = frameworks[framework]();
-		if (version != undefined) found.push('<span style="color:#9cf; font-weight:bold;">' + framework + '</span>: ' + version);
+	if (e) { 
+		r(); 
+		return; 
 	}
-	if (!found.length) found.push('No major framework found.');
 
-	var props = {
-		id: id,
-		onclick: remove,
-		innerHTML: found.join('<br />')
+	o = w.OpenAjax;
+	if (o) {
+		o = o.hub;
+		v = o.implVersion;
+		o = o.libraries;
+		for (i in o) {
+			if (o[i].version) 
+				a[i]=o[i].version
+		}
+		if (a.OpenAjax) delete a.OpenAjax;
+		f.push('Open Ajax ('+v+')')
+	}
+
+	l = {
+		YAHOO: 'Yahoo UI',
+		Spry: 'Adobe SPRY',
+		dojo: 'Dojo Toolkit',
+		Ext: 'Ext JS',
+		Prototype: 'Prototype',
+		Scriptaculous: 'Script.aculo.us',
+		MooTools: 'MooTools',
+		base2: 'Base2',
+		jpf: 'APF',
+		ample: 'AMPLE SDK',
+		WAF: 'Wakanda Ajax Framework',
+		jmaki: 'jMaki'
 	};
 
-	var styles = {
+	for (i in l) {
+		if (w[i]) { 
+			if (a[i]) delete a[i];
+			f.push(
+				l[i] +
+				(w[i].version ?
+					' (' + w[i].version + ')'
+				: (w[i].Version ?
+					' (' + w[i].Version + ')'
+				: (w[i].VERSION ?
+					' (' + w[i].VERSION + ')'
+				:
+					''
+				)))
+			);
+		}
+	}
+
+	// Flash, Mochikit, & Qooxdoo
+	if (w.swfobject) f.push('SWF Object (Flash version '+swfobject.ua.pv.join('.')+')');
+	if (w.MochiKit) f.push('MochiKit ('+MochiKit.MochiKit.VERSION+')');
+	if (w.qx) f.push('Qooxdoo ('+qx.core.Version+')');
+	if (a.swfobject) delete a.swfobject;
+	if (a.MochiKit) delete a.MochiKit;
+	if (a.qx) delete a.qx;
+
+	if (w.jQuery) {
+		if (a.jQuery) delete a.jQuery;
+		f.push('JQuery ('+jQuery.fn.jquery+')');
+		if($.ui) {
+			f.push('JQuery UI ('+$.ui.version+')')
+		}
+	}
+
+	if (w.MooTools) {
+		if (a.MooTools) delete a.MooTools;
+		m = MooTools;
+		if (m.version > '1.11') {
+			f.push( 'MooTools-Core ('+m.version+')');
+			f.push( 
+				'MooTools-More' +
+				(m.More) ?
+					' ('+m.version+')'
+				: (w.Tips || w.Drag) ?
+					' (< 1.2.2.1)'
+				: 
+					''
+			)
+		} else {
+			f.push( 'MooTools ('+m.version+')')
+		}
+	}
+	
+	// add undetected Open Ajax subscribed frameworks
+	for (i in a) {
+		f.push(i+' ('+a[i]+')');
+	}
+	// Show results
+
+	e = d.createElement('div');
+	e.id = n;
+	e.onclick = r;
+
+	s = {
 		background: '#111',
 		color: '#eee',
 		filter: 'alpha(opacity=90)',
 		opacity: 0.9,
-		top: '15px',
-		right: '15px',
+		top: '20px',
+		right: '20px',
 		position: 'fixed',
 		padding: '7px 15px',
 		border: 'solid 3px #eee',
@@ -91,9 +136,10 @@
 		zIndex: 32767
 	};
 
-	bar = document.createElement('div');
-	for (var prop in props) bar[prop] = props[prop];
-	for (var style in styles) bar.style[style] = styles[style];
-	document.body.appendChild(bar);
+	for (i in s) e.style[i] = s[i];
+
+	e.innerHTML = unescape(f.length ? f.join('<br/>') : 'No major framework found.');
+
+	b.appendChild(e);
 
 })();
